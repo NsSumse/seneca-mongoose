@@ -2,6 +2,22 @@ const senecaGenerator = require('seneca-generator');
 
 module.exports = mongoosePlugin;
 
+var createQuery = function(model, query){
+    if(query.skip){
+        model = model.skip(query.skip);
+    }
+    if(query.limit){
+        model = model.limit(query.limit);
+    }
+    if(query.sort){
+        model = model.sort(query.sort);
+    }
+    if(query.select){
+        model = model.select(query.select);
+    }
+    return model;
+};
+
 function mongoosePlugin (options) {
     if(!this.addAsync){
         senecaGenerator(this);
@@ -31,12 +47,12 @@ function mongoosePlugin (options) {
     for (map in options.map) {
         this.addAsync({role: map, cmd: 'findOne', data: '*'}, function*(args) {
             var model = mongoose.model(options.map[map]);
-            return yield model.findOne(args.data).exec();
+            return yield createQuery(model.findOne(args.data.query ||{}), data).exec();
         });
 
         this.addAsync({role: map, cmd: 'find', data: '*'}, function *(args) {
             var model = mongoose.model(options.map[map]);
-            return yield model.find(args.data).exec();
+            return yield createQuery(model.find(args.data.query ||{}), data).exec();
         });
 
         this.addAsync({role: map, cmd: 'create', data: '*'}, function *(args) {
@@ -44,12 +60,12 @@ function mongoosePlugin (options) {
             return yield model.create(args.data);
         });
 
-        this.addAsync({role: map, cmd: 'update', data: {query: '*', data: '*'}}, function *(args) {
+        this.addAsync({role: map, cmd: 'update', data: '*'}, function *(args) {
             var model = mongoose.model(options.map[map]);
             return yield model.update(args.data.query, args.data.data);
         });
 
-        this.addAsync({role: map, cmd: 'findOneAndUpdate', data: {query: '*', data: '*'}}, function *(args) {
+        this.addAsync({role: map, cmd: 'findOneAndUpdate', data: '*'}, function *(args) {
             var model = mongoose.model(options.map[map]);
             return yield model.findOneAndUpdate(args.data.query, args.data.data, args.data.options || {});
         });
