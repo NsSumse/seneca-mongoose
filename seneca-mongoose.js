@@ -47,7 +47,7 @@ function mongoosePlugin (options) {
     for (map in options.map) {
         this.addAsync({role: map, cmd: 'findOne', data: '*'}, function*(args) {
             var model = mongoose.model(options.map[map]);
-            return yield createQuery(model.findOne(args.data.query ||{}), data).exec();
+            return yield model.findOne(args.data.query).exec();
         });
 
         this.addAsync({role: map, cmd: 'find', data: '*'}, function *(args) {
