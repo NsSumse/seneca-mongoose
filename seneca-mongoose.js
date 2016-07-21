@@ -2,24 +2,24 @@ const senecaGenerator = require('seneca-generator');
 
 module.exports = mongoosePlugin;
 
-var createQuery = function(model, query){
-    if(query.skip){
+var createQuery = function (model, query) {
+    if (query.skip) {
         model = model.skip(query.skip);
     }
-    if(query.limit){
+    if (query.limit) {
         model = model.limit(query.limit);
     }
-    if(query.sort){
+    if (query.sort) {
         model = model.sort(query.sort);
     }
-    if(query.select){
+    if (query.select) {
         model = model.select(query.select);
     }
     return model;
 };
 
-function mongoosePlugin (options) {
-    if(!this.addAsync){
+function mongoosePlugin(options) {
+    if (!this.addAsync) {
         senecaGenerator(this);
     }
     var pluginName = 'mongoosePlugin', map, mongoose = options.mongoose;
@@ -45,39 +45,39 @@ function mongoosePlugin (options) {
     });
 
     for (map in options.map) {
-        this.addAsync({role: map, cmd: 'findOne', data: '*'}, function*(args) {
+        this.addAsync({role: map, cmd: 'findOne'}, function*(args) {
             var model = mongoose.model(options.map[map]);
-            return yield model.findOne(args.data.query).exec();
+            return yield model.findOne(args.query || {}).exec();
         });
 
-        this.addAsync({role: map, cmd: 'find', data: '*'}, function *(args) {
+        this.addAsync({role: map, cmd: 'find'}, function *(args) {
             var model = mongoose.model(options.map[map]);
-            return yield createQuery(model.find(args.data.query ||{}), data).exec();
+            return yield createQuery(model.find(args.query || {}), data).exec();
         });
 
-        this.addAsync({role: map, cmd: 'create', data: '*'}, function *(args) {
+        this.addAsync({role: map, cmd: 'create'}, function *(args) {
             var model = mongoose.model(options.map[map]);
             return yield model.create(args.data);
         });
 
-        this.addAsync({role: map, cmd: 'update', data: '*'}, function *(args) {
+        this.addAsync({role: map, cmd: 'update'}, function *(args) {
             var model = mongoose.model(options.map[map]);
-            return yield model.update(args.data.query, args.data.data);
+            return yield model.update(args.query, args.data);
         });
 
-        this.addAsync({role: map, cmd: 'findOneAndUpdate', data: '*'}, function *(args) {
+        this.addAsync({role: map, cmd: 'findOneAndUpdate'}, function *(args) {
             var model = mongoose.model(options.map[map]);
-            return yield model.findOneAndUpdate(args.data.query, args.data.data, args.data.options || {});
+            return yield model.findOneAndUpdate(args.query, args.data, args.options || {});
         });
 
-        this.addAsync({role: map, cmd: 'findOneAndRemove', data: '*'}, function *(args) {
+        this.addAsync({role: map, cmd: 'findOneAndRemove'}, function *(args) {
             var model = mongoose.model(options.map[map]);
-            return yield model.findOneAndRemove(args.data);
+            return yield model.findOneAndRemove(args.query);
         });
 
-        this.addAsync({role: map, cmd: 'findByIdAndRemove', data: '*'}, function *(args) {
+        this.addAsync({role: map, cmd: 'findByIdAndRemove'}, function *(args) {
             var model = mongoose.model(options.map[map]);
-            return yield model.findByIdAndRemove(args.data);
+            return yield model.findByIdAndRemove(args.query);
         });
     }
     return pluginName;
