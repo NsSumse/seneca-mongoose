@@ -1,6 +1,6 @@
 {
   "name": "seneca-mongoose",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "seneca with mongoose",
   "main": "seneca-mongoose.js",
   "repository": {},
